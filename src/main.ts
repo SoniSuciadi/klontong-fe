@@ -7,6 +7,9 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/dist/vuetify.min.css'
+import VueCookies from 'vue3-cookies'
+
+import SnackbarToast from './components/SnackbarToast.vue'
 const vuetify = createVuetify({
   components,
   directives,
@@ -19,7 +22,14 @@ const vuetify = createVuetify({
 })
 
 const app = createApp(App)
-
+app.component('SnackbarToast', SnackbarToast)
+app.use(VueCookies, {
+  expireTimes: '7d', // Default expiry (7 hari)
+  path: '/',
+  domain: '',
+  secure: false, // false untuk development
+  sameSite: 'Lax',
+})
 app.use(vuetify)
 app.use(createPinia())
 app.use(router)

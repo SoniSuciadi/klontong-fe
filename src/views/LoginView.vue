@@ -85,11 +85,12 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
 
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
-const loading = ref(false)
+const { loading, login } = useAuthStore()
 
 const rules = {
   required: (value: string) => !!value || 'Wajib diisi',
@@ -101,13 +102,10 @@ const rules = {
 }
 
 const handleLogin = async () => {
-  loading.value = true
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    console.log('Login attempt with:', email.value, password.value)
-  } finally {
-    loading.value = false
-  }
+  await login({
+    email: email.value,
+    password: password.value,
+  })
 }
 </script>
 

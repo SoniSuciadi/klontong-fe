@@ -23,9 +23,17 @@
 </template>
 
 <script lang="ts">
+import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { useDebounce } from '@/hooks/useDebounce'
 import FilterDialog from './FilterDialog.vue'
 
 export default {
+  data: function () {
+    return {
+      dialogVisible: false,
+    }
+  },
   name: 'SearchBar',
   components: {
     FilterDialog,
@@ -40,28 +48,30 @@ export default {
       default: 'mdi-filter-outline',
     },
   },
-  data() {
+  setup() {
+    const searchQuery = ref('')
+
+    const { debounce } = useDebounce()
+
+    const router = useRouter()
+
+    const updateURL = () => {
+      router.push({ query: { search: searchQuery.value } })
+    }
+
+    const onSearchInput = () => {
+      debounce(updateURL, 500)
+    }
+
     return {
-      dialogVisible: false,
-      searchQuery: '',
-      debounceTimeout: null,
+      searchQuery,
+      onSearchInput,
     }
   },
   methods: {
-    onSearchInput() {
-      clearTimeout(this.debounceTimeout)
-
-      this.debounceTimeout = setTimeout(() => {
-        this.updateURL()
-      }, 500)
-    },
-
-    updateURL() {
-      this.$router.push({ query: { search: this.searchQuery } })
-    },
-
     openDialog() {
-      this.$refs.filterDialog.openDialog()
+      const filterDialog = this.$refs.filterDialog as InstanceType<typeof FilterDialog>
+      filterDialog.openDialog()
     },
   },
 }

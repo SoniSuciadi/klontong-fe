@@ -13,7 +13,18 @@
               </v-toolbar>
 
               <v-card-text class="card-content">
-                <v-form @submit.prevent="handleLogin">
+                <v-form @submit.prevent="handleRegister">
+                  <v-text-field
+                    v-model="name"
+                    label="Name"
+                    name="name"
+                    required
+                    variant="outlined"
+                    class="input-field"
+                    color="primary"
+                    placeholder="Email"
+                    :rules="[rules.required]"
+                  />
                   <v-text-field
                     v-model="email"
                     label="Email"
@@ -90,15 +101,17 @@
 </template>
 
 <script lang="ts" setup>
+import type { RegisterPayload } from '@/service/auth/types'
+import { useAuthStore } from '@/stores/authStore'
 import { ref } from 'vue'
-
+const name = ref('')
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const confirmationPassword = ref('')
 const showConfirmationPassword = ref(false)
-const loading = ref(false)
-
+const { loading, register } = useAuthStore()
+console.log('👻 ~ loading:', loading)
 const rules = {
   required: (value: string) => !!value || 'Wajib diisi',
   email: (value: string) => {
@@ -111,14 +124,15 @@ const rules = {
   },
 }
 
-const handleLogin = async () => {
-  loading.value = true
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    console.log('Login attempt with:', email.value, password.value)
-  } finally {
-    loading.value = false
+const handleRegister = async () => {
+  const registerData: RegisterPayload = {
+    email: email.value,
+    password: password.value,
+    confirmPassword: confirmationPassword.value,
+    name: name.value,
   }
+
+  await register(registerData)
 }
 </script>
 
