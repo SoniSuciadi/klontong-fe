@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { type AxiosResponse, type AxiosError } from 'axios'
+import { type AxiosResponse } from 'axios'
 import type {
   LoginPayload,
   LoginResponse,
@@ -16,14 +16,20 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref<boolean>(false)
   const { showSnackbar } = useSnackbarStore()
 
+  const setUser = (data: LoginResponse | RegisterResponse) => {
+    user.value = data
+  }
+
   const login = async (data: LoginPayload) => {
     loading.value = true
     try {
       const response: AxiosResponse<Data<LoginResponse>> = await userLogin(data)
-      user.value = response.data.data
+      setUser(response.data.data)
+      showSnackbar('success', 'Login successful!')
+      return response
     } catch (err) {
-      const axiosError = err as AxiosError
-      console.error(axiosError)
+      showSnackbar('error', 'Login failed')
+      throw err
     } finally {
       loading.value = false
     }
@@ -33,12 +39,11 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       const response: AxiosResponse<Data<RegisterResponse>> = await userRegister(data)
-      user.value = response.data.data
-
+      setUser(response.data.data)
       showSnackbar('success', 'User created successfully!')
     } catch (err) {
-      console.error(err)
-      showSnackbar('error', 'Error creating user!')
+      showSnackbar('error', 'Registration failed')
+      throw err
     } finally {
       loading.value = false
     }

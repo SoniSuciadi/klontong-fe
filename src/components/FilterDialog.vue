@@ -4,12 +4,13 @@
       <v-autocomplete
         clearable
         chips
-        label="Autocomplete"
-        :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+        label="Select Categories"
+        :items="categoriesStore.categories"
         multiple
         variant="outlined"
         v-model="selectedFilters"
         class="pa-4"
+        :loading="categoriesStore.loading"
       />
 
       <template v-slot:actions>
@@ -21,6 +22,8 @@
 </template>
 
 <script lang="ts">
+import { useCategoryStore } from '@/stores/productStore'
+
 export default {
   name: 'FilterDialog',
   data() {
@@ -29,6 +32,11 @@ export default {
       selectedFilters: [] as string[],
     }
   },
+  computed: {
+    categoriesStore() {
+      return useCategoryStore()
+    },
+  },
   methods: {
     openDialog() {
       this.dialog = true
@@ -36,11 +44,16 @@ export default {
     closeDialog() {
       this.dialog = false
     },
-    applyFilter() {
+    async applyFilter() {
       const filterQuery = this.selectedFilters.join(',')
       this.$router.push({ query: { filter: filterQuery } })
+
+      console.log('Applied Filters:', this.selectedFilters)
       this.closeDialog()
     },
+  },
+  async mounted() {
+    await this.categoriesStore.fetchCategories()
   },
 }
 </script>

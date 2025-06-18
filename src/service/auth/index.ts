@@ -7,7 +7,11 @@ export const userLogin = async (
   data: LoginPayload,
 ): Promise<AxiosResponse<Data<LoginResponse>>> => {
   try {
-    return await axiosInstance.post('/auth/login', data)
+    const response = await axiosInstance.post('/auth/login', data)
+    axiosInstance.defaults.headers.common['Authorization'] =
+      `Bearer ${response.data.data.accessToken}`
+
+    return response
   } catch (error) {
     throw error as AxiosError
   }
@@ -17,7 +21,15 @@ export const userRegister = async (
   data: RegisterPayload,
 ): Promise<AxiosResponse<Data<RegisterResponse>>> => {
   try {
-    return await axiosInstance.post('/auth/register', data)
+    return axiosInstance.post('/auth/register', data)
+  } catch (error) {
+    throw error as AxiosError
+  }
+}
+
+export const refreshToken = async (): Promise<AxiosResponse<Data<{ accessToken: string }>>> => {
+  try {
+    return await axiosInstance.post('/auth/refresh', {}, { withCredentials: true })
   } catch (error) {
     throw error as AxiosError
   }
