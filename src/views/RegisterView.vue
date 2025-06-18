@@ -104,6 +104,7 @@
 import type { RegisterPayload } from '@/service/auth/types'
 import { useAuthStore } from '@/stores/authStore'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 const name = ref('')
 const email = ref('')
 const password = ref('')
@@ -111,7 +112,7 @@ const showPassword = ref(false)
 const confirmationPassword = ref('')
 const showConfirmationPassword = ref(false)
 const { loading, register } = useAuthStore()
-console.log('👻 ~ loading:', loading)
+const router = useRouter()
 const rules = {
   required: (value: string) => !!value || 'Wajib diisi',
   email: (value: string) => {
@@ -125,14 +126,19 @@ const rules = {
 }
 
 const handleRegister = async () => {
-  const registerData: RegisterPayload = {
-    email: email.value,
-    password: password.value,
-    confirmPassword: confirmationPassword.value,
-    name: name.value,
-  }
+  try {
+    const registerData: RegisterPayload = {
+      email: email.value,
+      password: password.value,
+      confirmPassword: confirmationPassword.value,
+      name: name.value,
+    }
 
-  await register(registerData)
+    await register(registerData)
+    router.push('/login')
+  } catch (error) {
+    console.error(error)
+  }
 }
 </script>
 

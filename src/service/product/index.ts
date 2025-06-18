@@ -1,5 +1,5 @@
 import type { AxiosError, AxiosResponse } from 'axios'
-import type { Data, Product } from '../types'
+import type { Data, Product, ProductDetail } from '../types'
 import axiosInstance from '../api'
 
 export const getCategories = async (): Promise<AxiosResponse<Data<string[]>>> => {
@@ -24,6 +24,15 @@ export const getProductList = async (
         category,
       },
     })
+    return response
+  } catch (error) {
+    throw error as AxiosError
+  }
+}
+
+export const getProductDetail = async (id: string): Promise<AxiosResponse<Data<ProductDetail>>> => {
+  try {
+    const response = await axiosInstance.get(`/product/detail/${id}`)
     return response
   } catch (error) {
     throw error as AxiosError

@@ -40,10 +40,10 @@ const router = createRouter({
       name: '404',
       component: NofFoundView,
     },
-    {
-      path: '/:pathMatch(.*)*',
-      redirect: '/404',
-    },
+    // {
+    //   path: '/:pathMatch(.*)*',
+    //   redirect: '/404',
+    // },
   ],
 })
 

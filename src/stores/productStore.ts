@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getProductList } from '@/service/product'
-import type { Product } from '@/service/types'
+import { getProductList, getProductDetail } from '@/service/product'
+import type { Product, ProductDetail } from '@/service/types'
 
 export const useProductStore = defineStore('product', () => {
   const products = ref<Product[]>([])
+  const productDetail = ref<ProductDetail | null>(null)
   const loading = ref<boolean>(false)
   const cursor = ref<string | null>(null)
   const hasMore = ref<boolean>(true)
@@ -13,10 +14,7 @@ export const useProductStore = defineStore('product', () => {
   const categoryFilter = ref<string>('')
 
   const fetchProducts = async (reset: boolean = false) => {
-    if (loading.value) return
-
     loading.value = true
-
     try {
       const response = await getProductList(
         reset ? '' : cursor.value?.toString(),
@@ -24,7 +22,6 @@ export const useProductStore = defineStore('product', () => {
         searchQuery.value,
         categoryFilter.value,
       )
-
       const newProducts = response.data.data
 
       if (reset || !cursor.value) {
@@ -40,26 +37,25 @@ export const useProductStore = defineStore('product', () => {
     }
   }
 
-  // Tambahkan actions untuk update search & filter
-  const setSearchQuery = (query: string) => {
-    searchQuery.value = query
-    fetchProducts(true) // Reset pagination
-  }
-
-  const setCategoryFilter = (category: string) => {
-    categoryFilter.value = category
-    fetchProducts(true) // Reset pagination
+  const fetchProductDetail = async (id: string) => {
+    loading.value = true
+    try {
+      const response = await getProductDetail(id)
+      productDetail.value = response.data.data
+    } finally {
+      loading.value = false
+    }
   }
 
   return {
     products,
+    productDetail,
     loading,
     fetchProducts,
+    fetchProductDetail,
     cursor,
     hasMore,
     searchQuery,
     categoryFilter,
-    setSearchQuery,
-    setCategoryFilter,
   }
 })

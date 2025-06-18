@@ -18,10 +18,11 @@
       </v-col>
     </v-row>
 
-    <v-row>
+    <!-- Product Details Section -->
+    <v-row v-if="productDetail && !loading">
       <v-col cols="12" md="5" class="d-flex justify-center">
         <v-img
-          :src="product.image"
+          :src="productDetail.image"
           alt="Product Image"
           aspect-ratio="1"
           contain
@@ -31,9 +32,9 @@
 
       <v-col cols="12" md="7">
         <v-card class="elevation-4 rounded-xl">
-          <v-card-title class="headline text-center">{{ product.name }}</v-card-title>
+          <v-card-title class="headline text-center">{{ productDetail.name }}</v-card-title>
           <v-card-subtitle class="text-center text-muted">{{
-            product.categoryName
+            productDetail.categoryName
           }}</v-card-subtitle>
           <v-divider class="my-4"></v-divider>
           <v-card-text>
@@ -42,14 +43,14 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>SKU</v-list-item-title>
-                    <v-list-item-subtitle>{{ product.sku }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>{{ productDetail.sku }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
 
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>Description</v-list-item-title>
-                    <v-list-item-subtitle>{{ product.description }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>{{ productDetail.description }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
               </v-col>
@@ -58,26 +59,24 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>Dimensions</v-list-item-title>
-                    <v-list-item-subtitle
-                      >{{ product.length }} x {{ product.width }} x
-                      {{ product.height }} cm</v-list-item-subtitle
-                    >
+                    <v-list-item-subtitle>
+                      {{ productDetail.length }} x {{ productDetail.width }} x
+                      {{ productDetail.height }} cm
+                    </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
 
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>Weight</v-list-item-title>
-                    <v-list-item-subtitle>{{ product.weight }} g</v-list-item-subtitle>
+                    <v-list-item-subtitle>{{ productDetail.weight }} g</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
 
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>Price</v-list-item-title>
-                    <v-list-item-subtitle
-                      >Rp {{ product.price.toLocaleString() }}</v-list-item-subtitle
-                    >
+                    <v-list-item-subtitle>{{ formattedPrice }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
               </v-col>
@@ -86,39 +85,73 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Loading Spinner -->
+    <v-row v-else-if="loading">
+      <v-col cols="12" class="text-center">
+        <v-progress-circular indeterminate color="primary" size="50" />
+      </v-col>
+    </v-row>
+
+    <!-- Error Message -->
+    <v-row v-else>
+      <v-col cols="12" class="text-center">
+        <v-alert type="error">Failed to load product details. Please try again later.</v-alert>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script lang="ts">
+import { useRoute } from 'vue-router'
+import { computed, onMounted } from 'vue'
+import { useProductStore } from '@/stores/productStore'
+import { storeToRefs } from 'pinia'
+
 export default {
-  data() {
-    return {
-      product: {
-        id: 86,
-        CategoryId: 14,
-        categoryName: 'Snacks',
-        sku: 'MHZVTK',
-        name: 'Ciki ciki',
-        description: 'Delicious Ciki ciki, only at our general store',
-        weight: 500,
-        width: 5,
-        length: 5,
-        height: 5,
-        image: 'https://cf.shopee.co.id/file/7cb930d1bd183a435f4fb3e5cc4a896b',
-        price: 30000,
-      },
+  name: 'ProductDetail',
+  setup() {
+    const route = useRoute()
+    const productStore = useProductStore()
+
+    const { productDetail, loading } = storeToRefs(productStore)
+
+    const productId = route.params.id as string
+
+    onMounted(() => {
+      productStore.fetchProductDetail(productId)
+    })
+
+    const goBack = () => {
+      window.history.back()
     }
-  },
-  methods: {
-    goBack() {
-      this.$router.go(-1)
-    },
-    deleteProduct() {
+
+    const deleteProduct = () => {
       alert('Product Deleted')
-    },
-    updateProduct() {
+    }
+
+    const updateProduct = () => {
       alert('Navigate to update page')
-    },
+    }
+
+    const formattedPrice = computed(() => {
+      return productDetail
+        ? new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+          }).format(productDetail.value?.price || 0)
+        : ''
+    })
+
+    return {
+      productDetail,
+      loading,
+      goBack,
+      deleteProduct,
+      updateProduct,
+      formattedPrice,
+    }
   },
 }
 </script>

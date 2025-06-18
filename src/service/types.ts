@@ -9,3 +9,19 @@ export type Product = {
   image: string
   price: number
 }
+
+export type ProductDetail = {
+  id: string
+  sku: string
+  name: string
+  description: string
+  weight: number
+  width: number
+  length: number
+  height: number
+  image: string
+  price: number
+  createdAt: Date
+  updatedAt: Date
+  categoryName: string
+}

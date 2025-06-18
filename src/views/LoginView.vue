@@ -86,6 +86,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
+import { useRouter } from 'vue-router'
 
 const email = ref('')
 const password = ref('')
@@ -100,12 +101,17 @@ const rules = {
     return pattern.test(value) || 'Email tidak valid'
   },
 }
-
+const router = useRouter()
 const handleLogin = async () => {
-  await login({
-    email: email.value,
-    password: password.value,
-  })
+  try {
+    await login({
+      email: email.value,
+      password: password.value,
+    })
+    router.push('/')
+  } catch (error) {
+    console.error(error)
+  }
 }
 </script>
 

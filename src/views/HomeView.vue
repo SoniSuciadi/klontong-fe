@@ -17,6 +17,7 @@
           :name="product.name"
           :price="product.price"
           :category="product.categoryName"
+          :id="product.id"
         />
       </v-col>
     </v-row>

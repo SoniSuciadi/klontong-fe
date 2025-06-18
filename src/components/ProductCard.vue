@@ -1,5 +1,5 @@
 <template>
-  <v-card class="product-card" elevation="0" hover>
+  <v-card class="product-card" elevation="0" hover @click="handleCardClick">
     <v-img :src="image" height="200" contain class="product-image"></v-img>
     <v-card-text class="product-content">
       <div class="product-category">{{ category }}</div>
@@ -10,10 +10,16 @@
 </template>
 
 <script lang="ts">
+import { useRouter } from 'vue-router'
+
 export default {
   name: 'ProductCard',
   props: {
     image: {
+      type: String,
+      required: true,
+    },
+    id: {
       type: String,
       required: true,
     },
@@ -29,6 +35,17 @@ export default {
       type: String,
       required: true,
     },
+  },
+  setup(props) {
+    const router = useRouter()
+
+    const handleCardClick = () => {
+      router.push(`/${props.id}`)
+    }
+
+    return {
+      handleCardClick,
+    }
   },
   computed: {
     formattedPrice(): string {
