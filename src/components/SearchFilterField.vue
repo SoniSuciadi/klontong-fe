@@ -4,8 +4,9 @@
     hide-details="auto"
     :label="label"
     variant="outlined"
-    v-model="searchQuery"
-    @input="onSearchInput"
+    :model-value="searchQuery"
+    @update:model-value="onSearchInput"
+    @keydown.enter="triggerSearchImmediately"
   >
     <template v-slot:append-inner>
       <v-icon-btn
@@ -18,23 +19,19 @@
       </v-icon-btn>
     </template>
 
-    <FilterDialog ref="filterDialog" />
+    <FilterDialog ref="filterDialog" @filter="handleFilter" />
   </v-text-field>
 </template>
 
 <script lang="ts">
-import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useProductStore } from '@/stores/productStore'
 import { useDebounce } from '@/hooks/useDebounce'
 import FilterDialog from './FilterDialog.vue'
 
 export default {
-  data: function () {
-    return {
-      dialogVisible: false,
-    }
-  },
-  name: 'SearchBar',
+  name: 'SearchFilterField',
   components: {
     FilterDialog,
   },
@@ -48,24 +45,39 @@ export default {
       default: 'mdi-filter-outline',
     },
   },
-  setup() {
-    const searchQuery = ref('')
+  emits: ['filter'],
+  setup(props, { emit }) {
+    const productStore = useProductStore()
+    const { searchQuery } = storeToRefs(productStore)
 
+    const { setSearchQuery, fetchProducts } = productStore
     const { debounce } = useDebounce()
+    const dialogVisible = ref(false)
 
-    const router = useRouter()
-
-    const updateURL = () => {
-      router.push({ query: { ...router.currentRoute.value.query, search: searchQuery.value } })
+    const triggerSearch = (value: string) => {
+      setSearchQuery(value)
+      fetchProducts(true)
     }
 
-    const onSearchInput = () => {
-      debounce(updateURL, 500)
+    const onSearchInput = (value: string) => {
+      debounce(() => triggerSearch(value), 500)
+    }
+
+    const triggerSearchImmediately = (event: Event) => {
+      const value = (event.target as HTMLInputElement).value
+      triggerSearch(value)
+    }
+
+    const handleFilter = (category: string) => {
+      emit('filter', category)
     }
 
     return {
       searchQuery,
       onSearchInput,
+      triggerSearchImmediately,
+      handleFilter,
+      dialogVisible,
     }
   },
   methods: {
@@ -76,5 +88,3 @@ export default {
   },
 }
 </script>
-
-<style scoped></style>

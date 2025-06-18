@@ -21,7 +21,7 @@ export const getProductList = async (
         cursor,
         limit,
         search,
-        filter: category,
+        category,
       },
     })
     return response

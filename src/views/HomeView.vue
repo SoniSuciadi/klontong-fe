@@ -63,7 +63,7 @@ export default {
 
       if (entry.isIntersecting && !loading.value && hasMore.value) {
         console.log('Fetching more products...')
-        await fetchProducts(cursor.value || '')
+        await fetchProducts()
       }
     }
 
@@ -105,7 +105,7 @@ export default {
 
       if (rect.top <= triggerPoint) {
         console.log('Scroll fallback triggered')
-        fetchProducts(cursor.value || '')
+        fetchProducts()
       }
     }
 

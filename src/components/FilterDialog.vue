@@ -11,11 +11,18 @@
         v-model="selectedFilters"
         class="pa-4"
         :loading="categoriesStore.loading"
+        item-title="name"
+        item-value="id"
       />
 
       <template v-slot:actions>
         <v-btn text="Cancel" variant="plain" @click="closeDialog"></v-btn>
-        <v-btn text="Apply Filter" @click="applyFilter"></v-btn>
+        <v-btn
+          text="Apply Filter"
+          color="primary"
+          @click="applyFilter"
+          :loading="productStore.loading"
+        ></v-btn>
       </template>
     </v-card>
   </v-dialog>
@@ -23,8 +30,10 @@
 
 <script lang="ts">
 import { useCategoryStore } from '@/stores/categoryStore'
+import { useProductStore } from '@/stores/productStore'
+import { defineComponent } from 'vue'
 
-export default {
+export default defineComponent({
   name: 'FilterDialog',
   data() {
     return {
@@ -36,26 +45,34 @@ export default {
     categoriesStore() {
       return useCategoryStore()
     },
+    productStore() {
+      return useProductStore()
+    },
   },
   methods: {
     openDialog() {
+      // Set the selected filters based on the current categoryFilter in the store
+      this.selectedFilters = this.productStore.categoryFilter.split(',').filter((el) => !!el)
       this.dialog = true
     },
     closeDialog() {
       this.dialog = false
     },
-    async applyFilter() {
-      const filterQuery = this.selectedFilters.join(',')
-      this.$router.push({ query: { ...this.$route.query, filter: filterQuery } })
 
-      console.log('Applied Filters:', this.selectedFilters)
+    async applyFilter() {
+      // Set the category filter in the store
+      this.productStore.setCategoryFilter(this.selectedFilters.join(','))
+      // Fetch products after updating the filter
+      await this.productStore.fetchProducts(true)
+      // Close the filter dialog
       this.closeDialog()
     },
   },
   async mounted() {
+    // Fetch categories when the component is mounted
     await this.categoriesStore.fetchCategories()
   },
-}
+})
 </script>
 
 <style scoped>
