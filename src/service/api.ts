@@ -1,6 +1,8 @@
 import axios, { type AxiosInstance } from 'axios'
 import { useCookies } from 'vue3-cookies'
+
 const baseURL = 'http://localhost:8080/api/v1'
+
 const axiosInstance: AxiosInstance = axios.create({
   baseURL,
   headers: {
@@ -13,6 +15,8 @@ const { cookies } = useCookies()
 
 const getRefreshToken = () => cookies.get('refreshToken')
 
+let refreshing: Promise<string> | undefined = undefined
+
 const refreshAccessToken = async () => {
   const refreshToken = getRefreshToken()
   if (!refreshToken) {
@@ -22,11 +26,9 @@ const refreshAccessToken = async () => {
   try {
     const response = await axios.get(`${baseURL}/auth/refresh`, { withCredentials: true })
     const result = response.data
-
     return result.data.accessToken
   } catch (error) {
     console.error(error)
-
     throw new Error('Failed to refresh token')
   }
 }
@@ -37,18 +39,24 @@ axiosInstance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config
-    if (error.response.status === 401) {
-      console.log('oi')
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
       try {
-        const newAccessToken = await refreshAccessToken()
+        if (!refreshing) {
+          refreshing = refreshAccessToken()
+        }
 
+        const newAccessToken = await refreshing
+        refreshing = undefined
+
+        axiosInstance.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`
 
         return axiosInstance(originalRequest)
       } catch (refreshError) {
-        console.log(refreshError)
+        console.error(refreshError)
         return Promise.reject(refreshError)
       }
     }

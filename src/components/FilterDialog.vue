@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { useCategoryStore } from '@/stores/productStore'
+import { useCategoryStore } from '@/stores/categoryStore'
 
 export default {
   name: 'FilterDialog',

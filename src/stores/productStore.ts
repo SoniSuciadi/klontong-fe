@@ -1,31 +1,45 @@
-import { getCategories } from '@/service/product'
-import type { Data } from '@/service/types'
-import type { AxiosError, AxiosResponse } from 'axios'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { getProductList } from '@/service/product'
+import type { Product } from '@/service/types'
 
-export const useCategoryStore = defineStore('category', () => {
-  const categories = ref<string[]>([])
+export const useProductStore = defineStore('product', () => {
+  const products = ref<Product[]>([])
   const loading = ref<boolean>(false)
-  const error = ref<AxiosError | null>(null)
+  const cursor = ref<string | null>(null)
+  const hasMore = ref<boolean>(true)
 
-  const fetchCategories = async () => {
+  const fetchProducts = async (cursorParam: string | null = null) => {
+    if (loading.value) return
+
     loading.value = true
-    error.value = null
+
     try {
-      const response: AxiosResponse<Data<string[]>> = await getCategories()
-      categories.value = response.data.data
-    } catch (err) {
-      error.value = err as AxiosError
+      const response = await getProductList(cursorParam || '')
+      const newProducts = response.data.data
+
+      if (cursorParam === null) {
+        products.value = newProducts
+      } else {
+        products.value = [...products.value, ...newProducts]
+      }
+
+      if (newProducts.length > 0) {
+        cursor.value = newProducts[newProducts.length - 1].id
+        hasMore.value = true
+      } else {
+        hasMore.value = false
+      }
     } finally {
       loading.value = false
     }
   }
 
   return {
-    categories,
+    products,
     loading,
-    error,
-    fetchCategories,
+    fetchProducts,
+    cursor,
+    hasMore,
   }
 })

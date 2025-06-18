@@ -24,10 +24,10 @@ const vuetify = createVuetify({
 const app = createApp(App)
 app.component('SnackbarToast', SnackbarToast)
 app.use(VueCookies, {
-  expireTimes: '7d', // Default expiry (7 hari)
+  expireTimes: '7d',
   path: '/',
   domain: '',
-  secure: false, // false untuk development
+  secure: false,
   sameSite: 'Lax',
 })
 app.use(vuetify)
