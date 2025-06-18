@@ -46,7 +46,7 @@ export default {
     },
     async applyFilter() {
       const filterQuery = this.selectedFilters.join(',')
-      this.$router.push({ query: { filter: filterQuery } })
+      this.$router.push({ query: { ...this.$route.query, filter: filterQuery } })
 
       console.log('Applied Filters:', this.selectedFilters)
       this.closeDialog()

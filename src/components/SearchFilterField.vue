@@ -56,7 +56,7 @@ export default {
     const router = useRouter()
 
     const updateURL = () => {
-      router.push({ query: { search: searchQuery.value } })
+      router.push({ query: { ...router.currentRoute.value.query, search: searchQuery.value } })
     }
 
     const onSearchInput = () => {

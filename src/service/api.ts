@@ -26,6 +26,7 @@ const refreshAccessToken = async () => {
     return result.data.accessToken
   } catch (error) {
     console.error(error)
+
     throw new Error('Failed to refresh token')
   }
 }

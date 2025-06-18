@@ -1,10 +1,12 @@
 <template>
   <v-container fluid>
-    <SearchFilterField label="Search " icon="mdi-filter-outline" />
+    <!-- Search and Filter Component -->
+    <SearchFilterField label="Search" icon="mdi-filter-outline" />
 
+    <!-- Product List -->
     <v-row align="center" wrap>
       <v-col
-        v-for="product in products"
+        v-for="product in products.values()"
         :key="product.id"
         cols="6"
         sm="4"
@@ -20,12 +22,19 @@
         />
       </v-col>
     </v-row>
+
+    <!-- Infinite Scroll Spinner -->
+    <div v-if="hasMore" ref="loadMore" class="text-center">
+      <v-progress-circular v-if="loading" indeterminate color="primary" />
+    </div>
   </v-container>
 </template>
 
 <script lang="ts">
+import { ref, onMounted, watch } from 'vue'
 import ProductCard from '../components/ProductCard.vue'
 import SearchFilterField from '../components/SearchFilterField.vue'
+import { useProductStore } from '@/stores/useProductStore'
 
 export default {
   name: 'App',
@@ -33,63 +42,53 @@ export default {
     ProductCard,
     SearchFilterField,
   },
-  data() {
+  setup() {
+    const productStore = useProductStore()
+    const { products, loading, fetchProducts, cursor, hasMore } = productStore
+
+    const loadMoreRef = ref(null)
+
+    onMounted(() => {
+      fetchProducts()
+
+      const observer = new IntersectionObserver(
+        async (entries) => {
+          const entry = entries[0]
+          if (entry.isIntersecting && !loading && hasMore) {
+            await fetchProducts(cursor || '')
+          }
+        },
+        { threshold: 1.0 },
+      )
+
+      if (loadMoreRef.value) {
+        observer.observe(loadMoreRef.value)
+      }
+    })
+
+    watch(
+      () => productStore.cursor,
+      (newCursor) => {
+        if (newCursor) {
+          fetchProducts(newCursor)
+        }
+      },
+    )
+
     return {
-      products: [
-        {
-          id: 86,
-          categoryName: 'Snacks',
-          name: 'Ciki ciki',
-          image: 'https://cf.shopee.co.id/file/7cb930d1bd183a435f4fb3e5cc4a896b',
-          price: 30000,
-        },
-        {
-          id: 87,
-          categoryName: 'Snacks',
-          name: 'Oreo',
-          image: 'https://cf.shopee.co.id/file/8cb930d1bd183a435f4fb3e5cc4a897b',
-          price: 25000,
-        },
-        {
-          id: 87,
-          categoryName: 'Snacks',
-          name: 'Oreo',
-          image: 'https://cf.shopee.co.id/file/8cb930d1bd183a435f4fb3e5cc4a897b',
-          price: 25000,
-        },
-        {
-          id: 87,
-          categoryName: 'Snacks',
-          name: 'Oreo',
-          image: 'https://cf.shopee.co.id/file/8cb930d1bd183a435f4fb3e5cc4a897b',
-          price: 25000,
-        },
-        {
-          id: 87,
-          categoryName: 'Snacks',
-          name: 'Oreo',
-          image: 'https://cf.shopee.co.id/file/8cb930d1bd183a435f4fb3e5cc4a897b',
-          price: 25000,
-        },
-        {
-          id: 87,
-          categoryName: 'Snacks',
-          name: 'Oreo',
-          image: 'https://cf.shopee.co.id/file/8cb930d1bd183a435f4fb3e5cc4a897b',
-          price: 25000,
-        },
-        {
-          id: 87,
-          categoryName: 'Snacks',
-          name: 'Oreo',
-          image: 'https://cf.shopee.co.id/file/8cb930d1bd183a435f4fb3e5cc4a897b',
-          price: 25000,
-        },
-        // Add more products as needed
-      ],
+      products,
+      loading,
+      fetchProducts,
+      cursor,
+      hasMore,
+      loadMoreRef,
     }
   },
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.pa-4 {
+  padding: 16px !important;
+}
+</style>
