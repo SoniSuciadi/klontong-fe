@@ -27,7 +27,7 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci --prefer-offline
+        run: npm install --frozen-lockfile
 
       - name: Build App
         run: npm run build
