@@ -60,7 +60,7 @@
                   <v-col cols="6">
                     <v-text-field
                       v-model="product.price"
-                      label="Price ($)"
+                      label="Price"
                       type="number"
                       :rules="[rules.required, rules.number]"
                       required
@@ -309,8 +309,8 @@ export default defineComponent({
 
         resetForm()
 
-        router.push({ name: 'home' })
         productStore.fetchProducts(true)
+        router.push({ name: 'home' })
       } catch (error) {
         console.error('Error submitting product:', error)
       } finally {
@@ -341,6 +341,7 @@ export default defineComponent({
     }
 
     onMounted(() => {
+      categoriesStore.fetchCategories()
       const productId = route.params.id as string | undefined
       if (productId) {
         fetchProductForEdit(productId)
