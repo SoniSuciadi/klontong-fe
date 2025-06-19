@@ -1,7 +1,7 @@
 import axios, { type AxiosInstance } from 'axios'
 import { useCookies } from 'vue3-cookies'
 
-const baseURL = 'http://localhost:8080/api/v1'
+const baseURL = import.meta.env.VITE_API_BASE_URL
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL,
