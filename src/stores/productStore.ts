@@ -1,8 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getProductList, getProductDetail, createProduct, updateProduct } from '@/service/product'
+import {
+  getProductList,
+  getProductDetail,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from '@/service/product'
 import type { Product, ProductDetail } from '@/service/types'
 import type { ProductForm } from '@/types'
+import { useSnackbarStore } from './snackbarStore'
 
 export const useProductStore = defineStore('product', () => {
   const products = ref<Product[]>([])
@@ -13,6 +20,7 @@ export const useProductStore = defineStore('product', () => {
 
   const searchQuery = ref<string>('')
   const categoryFilter = ref<string>('')
+  const { showSnackbar } = useSnackbarStore()
 
   const fetchProducts = async (reset: boolean = false) => {
     if (loading.value) return
@@ -37,6 +45,9 @@ export const useProductStore = defineStore('product', () => {
 
       cursor.value = newProducts.length > 0 ? newProducts[newProducts.length - 1].id : null
       hasMore.value = newProducts.length > 0
+    } catch (error) {
+      console.error(error)
+      showSnackbar('error', 'Failed to get products')
     } finally {
       loading.value = false
     }
@@ -83,8 +94,10 @@ export const useProductStore = defineStore('product', () => {
 
     try {
       const response = await createProduct(formData)
+      showSnackbar('success', 'Product created successfully!')
       return response.data
     } catch (error) {
+      showSnackbar('error', 'Product creation failed')
       console.error('Error creating product:', error)
       throw error
     } finally {
@@ -113,12 +126,22 @@ export const useProductStore = defineStore('product', () => {
 
     try {
       const response = await updateProduct(formData, id)
+      showSnackbar('success', 'Product updated successfully!')
       return response.data
     } catch (error) {
+      showSnackbar('error', 'Product update failed')
       console.error('Error creating product:', error)
       throw error
     } finally {
       loading.value = false
+    }
+  }
+  const delProduct = async (id: string) => {
+    try {
+      return await deleteProduct(id)
+    } catch (error) {
+      showSnackbar('error', 'Product deletion failed')
+      console.error(error)
     }
   }
 
@@ -136,5 +159,6 @@ export const useProductStore = defineStore('product', () => {
     searchQuery,
     categoryFilter,
     submitProduct,
+    delProduct,
   }
 })

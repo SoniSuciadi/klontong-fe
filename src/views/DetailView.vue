@@ -138,9 +138,11 @@ export default defineComponent({
       router.push('/')
     }
 
-    const deleteProduct = () => {
+    const deleteProduct = async () => {
       if (confirm('Are you sure you want to delete this product?')) {
-        router.push('/product')
+        await productStore.delProduct(productId.value)
+        productStore.fetchProducts(true)
+        router.push('/')
       }
     }
 

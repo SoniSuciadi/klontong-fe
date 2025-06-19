@@ -26,6 +26,8 @@
       <v-progress-circular v-if="loading" indeterminate color="primary" size="50" />
       <div v-else style="height: 50px"></div>
     </div>
+
+    <FloatingActionButton />
   </v-container>
 </template>
 
@@ -35,12 +37,14 @@ import { storeToRefs } from 'pinia'
 import ProductCard from '../components/ProductCard.vue'
 import SearchFilterField from '../components/SearchFilterField.vue'
 import { useProductStore } from '@/stores/productStore'
+import FloatingActionButton from '@/components/FloatingActionButton.vue'
 
 export default {
-  name: 'ProductList',
+  name: 'HomeView',
   components: {
     ProductCard,
     SearchFilterField,
+    FloatingActionButton,
   },
   setup() {
     const debug = ref(import.meta.env.MODE === 'development')
@@ -112,6 +116,7 @@ export default {
       loadMoreRef,
       debug,
       showLoader,
+      FloatingActionButton,
     }
   },
 }

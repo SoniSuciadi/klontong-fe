@@ -60,3 +60,12 @@ export const updateProduct = async (formData: FormData, id: string) => {
     throw error
   }
 }
+
+export const deleteProduct = async (id: string) => {
+  console.log('👻 ~ deleteProduct ~ id:', id)
+  try {
+    return await axiosInstance.delete(`/product/${id}`)
+  } catch (error) {
+    throw error
+  }
+}
