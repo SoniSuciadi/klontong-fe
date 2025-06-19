@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getProductList, getProductDetail, createProduct } from '@/service/product'
+import { getProductList, getProductDetail, createProduct, updateProduct } from '@/service/product'
 import type { Product, ProductDetail } from '@/service/types'
+import type { ProductForm } from '@/types'
 
 export const useProductStore = defineStore('product', () => {
   const products = ref<Product[]>([])
@@ -60,18 +61,21 @@ export const useProductStore = defineStore('product', () => {
       loading.value = false
     }
   }
-  const submitProduct = async (productData) => {
+
+  const submitProduct = async (productData: ProductForm) => {
     loading.value = true
 
     const formData = new FormData()
+
     formData.append('name', productData.name)
     formData.append('description', productData.description)
-    formData.append('weight', String(productData.weight))
-    formData.append('width', String(productData.width))
-    formData.append('length', String(productData.length))
-    formData.append('height', String(productData.height))
-    formData.append('price', String(productData.price))
-    formData.append('categoryId', productData.category)
+    formData.append('weight', String(productData.weight ?? ''))
+    formData.append('width', String(productData.width ?? ''))
+    formData.append('length', String(productData.length ?? ''))
+    formData.append('height', String(productData.height ?? ''))
+    formData.append('price', String(productData.price ?? ''))
+
+    formData.append('categoryId', String(productData.category))
 
     if (productData.image) {
       formData.append('image', productData.image)
@@ -79,9 +83,40 @@ export const useProductStore = defineStore('product', () => {
 
     try {
       const response = await createProduct(formData)
-      console.log('Product created:', response.data)
+      return response.data
     } catch (error) {
       console.error('Error creating product:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+  const submitUpdateProduct = async (productData: ProductForm, id: string) => {
+    loading.value = true
+
+    const formData = new FormData()
+
+    formData.append('name', productData.name)
+    formData.append('description', productData.description)
+    formData.append('weight', String(productData.weight ?? ''))
+    formData.append('width', String(productData.width ?? ''))
+    formData.append('length', String(productData.length ?? ''))
+    formData.append('height', String(productData.height ?? ''))
+    formData.append('price', String(productData.price ?? ''))
+    formData.append('imageUrl', String(productData.imageUrl ?? ''))
+
+    formData.append('categoryId', String(productData.category))
+
+    if (productData.image) {
+      formData.append('image', productData.image)
+    }
+
+    try {
+      const response = await updateProduct(formData, id)
+      return response.data
+    } catch (error) {
+      console.error('Error creating product:', error)
+      throw error
     } finally {
       loading.value = false
     }
@@ -93,6 +128,7 @@ export const useProductStore = defineStore('product', () => {
     loading,
     setSearchQuery,
     setCategoryFilter,
+    submitUpdateProduct,
     fetchProducts,
     fetchProductDetail,
     cursor,

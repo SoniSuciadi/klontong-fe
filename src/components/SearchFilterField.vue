@@ -1,26 +1,34 @@
 <template>
-  <v-text-field
-    class="mx-auto"
-    hide-details="auto"
-    :label="label"
-    variant="outlined"
-    :model-value="searchQuery"
-    @update:model-value="onSearchInput"
-    @keydown.enter="triggerSearchImmediately"
-  >
-    <template v-slot:append-inner>
-      <v-icon-btn
-        :opacity="dialogVisible ? 1 : 0.32"
-        :icon="icon"
-        @click.stop="openDialog"
-        @mousedown.stop
+  <v-row class="align-center">
+    <v-col cols="11">
+      <v-text-field
+        class="mx-auto"
+        hide-details="auto"
+        :label="label"
+        variant="outlined"
+        :model-value="searchQuery"
+        @update:model-value="onSearchInput"
+        @keydown.enter="triggerSearchImmediately"
       >
-        <v-icon>{{ icon }}</v-icon>
-      </v-icon-btn>
-    </template>
+        <template v-slot:append-inner>
+          <v-icon-btn
+            :opacity="dialogVisible ? 1 : 0.32"
+            :icon="icon"
+            @click.stop="openDialog"
+            @mousedown.stop
+          >
+            <v-icon>{{ icon }}</v-icon>
+          </v-icon-btn>
+        </template>
 
-    <FilterDialog ref="filterDialog" @filter="handleFilter" />
-  </v-text-field>
+        <FilterDialog ref="filterDialog" @filter="handleFilter" />
+      </v-text-field>
+    </v-col>
+
+    <v-col cols="1" class="d-flex justify-end">
+      <v-btn color="primary" @click="onAddProduct" class="mx-2" elevation="2" rounded> Add </v-btn>
+    </v-col>
+  </v-row>
 </template>
 
 <script lang="ts">
@@ -29,6 +37,7 @@ import { storeToRefs } from 'pinia'
 import { useProductStore } from '@/stores/productStore'
 import { useDebounce } from '@/hooks/useDebounce'
 import FilterDialog from './FilterDialog.vue'
+import router from '@/router'
 
 export default {
   name: 'SearchFilterField',
@@ -72,12 +81,17 @@ export default {
       emit('filter', category)
     }
 
+    const onAddProduct = () => {
+      router.push('/product')
+    }
+
     return {
       searchQuery,
       onSearchInput,
       triggerSearchImmediately,
       handleFilter,
       dialogVisible,
+      onAddProduct,
     }
   },
   methods: {
@@ -88,3 +102,7 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+/* Adjust the layout as per your needs */
+</style>

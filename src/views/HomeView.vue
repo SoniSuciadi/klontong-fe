@@ -55,12 +55,6 @@ export default {
 
     const handleIntersection = async (entries: IntersectionObserverEntry[]) => {
       const entry = entries[0]
-      console.log('Intersection event:', {
-        isIntersecting: entry.isIntersecting,
-        loading: loading.value,
-        hasMore: hasMore.value,
-        cursor: cursor.value,
-      })
 
       if (entry.isIntersecting && !loading.value && hasMore.value) {
         console.log('Fetching more products...')

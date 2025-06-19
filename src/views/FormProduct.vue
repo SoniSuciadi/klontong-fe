@@ -4,7 +4,9 @@
       <v-row justify="center">
         <v-col cols="12" md="8" lg="6">
           <v-card class="elevation-6">
-            <v-card-title class="headline text-primary">Add New Product</v-card-title>
+            <v-card-title class="headline text-primary">{{
+              $route.params.id ? 'Edit Product' : 'Add New Product'
+            }}</v-card-title>
             <v-card-subtitle>Please fill out the details of the product</v-card-subtitle>
 
             <v-form v-model="valid" ref="form" @submit.prevent="submitForm">
@@ -104,7 +106,6 @@
                   prepend-inner-icon="mdi-arrow-up-down"
                 />
 
-                <!-- Image Upload -->
                 <div class="mb-6">
                   <div class="d-flex justify-space-between align-center mb-2">
                     <v-label class="text-caption">Product Image</v-label>
@@ -122,7 +123,7 @@
                   <v-file-input
                     v-model="product.image"
                     accept="image/*"
-                    :rules="[rules.required, rules.image]"
+                    :rules="[imageRequiredRule, rules.image]"
                     prepend-icon=""
                     prepend-inner-icon="mdi-camera"
                     variant="outlined"
@@ -133,7 +134,7 @@
                   >
                     <template v-slot:selection="{ fileNames }">
                       <div class="text-truncate">
-                        {{ fileNames[0] }}
+                        {{ fileNames[0] || 'No image selected' }}
                       </div>
                     </template>
                   </v-file-input>
@@ -170,156 +171,198 @@
     </v-container>
   </div>
 </template>
+
 <script lang="ts">
+import { defineComponent, ref, reactive, computed, onMounted } from 'vue'
 import { useCategoryStore } from '@/stores/categoryStore'
 import { useProductStore } from '@/stores/productStore'
-import { defineComponent } from 'vue'
-import type { VForm } from 'vuetify/components'
+import { useRoute, useRouter } from 'vue-router'
+import type { VForm, VFileInput } from 'vuetify/components'
+
+interface ProductForm {
+  name: string
+  description: string
+  weight: number | null
+  width: number | null
+  length: number | null
+  height: number | null
+  price: number | null
+  category: string | null
+  image: File | null
+  imageUrl: string | null
+}
 
 export default defineComponent({
-  name: 'AddProductPage',
+  name: 'FormProductPage',
 
-  data() {
-    return {
-      valid: false,
-      loading: false,
-      previewImage: null as string | null,
-      product: {
+  setup() {
+    const categoriesStore = useCategoryStore()
+    const productStore = useProductStore()
+    const route = useRoute()
+    const router = useRouter()
+
+    const valid = ref(false)
+    const loading = ref(false)
+
+    const form = ref<VForm | null>(null)
+    const fileInput = ref<VFileInput | null>(null)
+
+    const isEditing = computed(() => !!route.params.id)
+
+    const product = reactive<ProductForm>({
+      name: '',
+      description: '',
+      weight: null,
+      width: null,
+      length: null,
+      height: null,
+      price: null,
+      category: null,
+      image: null,
+      imageUrl: null,
+    })
+
+    const previewImage = computed(() => {
+      if (product.image) {
+        return URL.createObjectURL(product.image)
+      }
+      return product.imageUrl
+    })
+
+    const rules = {
+      required: (value: unknown) => !!value || 'This field is required',
+      number: (value: number | string | null) =>
+        (value !== null && !isNaN(Number(value))) || 'Must be a valid number',
+      image: (value: File | null) => {
+        if (isEditing.value) {
+          return true
+        }
+        if (!value) return 'Image is required'
+        if (value.size > 5 * 1024 * 1024) {
+          return 'Image size must be less than 5MB'
+        }
+        return true
+      },
+    }
+
+    const imageRequiredRule = () => {
+      if (product.image || previewImage.value) {
+        return true
+      }
+      return 'Image is required'
+    }
+
+    const fetchProductForEdit = async (id: string) => {
+      try {
+        await productStore.fetchProductDetail(id)
+        const fetchedProduct = productStore.productDetail
+        if (fetchedProduct) {
+          product.name = fetchedProduct.name
+          product.description = fetchedProduct.description
+          product.weight = fetchedProduct.weight
+          product.width = fetchedProduct.width
+          product.length = fetchedProduct.length
+          product.height = fetchedProduct.height
+          product.price = fetchedProduct.price
+          product.category = fetchedProduct.categoryName
+          product.imageUrl = fetchedProduct.image
+          product.image = null
+        }
+        if (form.value) {
+          form.value.validate()
+        }
+      } catch (error) {
+        console.error('Error fetching product detail:', error)
+      }
+    }
+
+    const resetForm = () => {
+      form.value?.reset()
+      Object.assign(product, {
         name: '',
         description: '',
         weight: null,
         width: null,
         length: null,
         height: null,
-        image: null,
         price: null,
         category: null,
-      },
-      rules: {
-        required: (value: unknown) => !!value || 'This field is required',
-        number: (value: string | number) =>
-          (value && !isNaN(Number(value))) || 'Must be a valid number',
-        image: (value: File | null) => {
-          if (!value) return 'Image is required'
-          const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-          if (!validTypes.includes(value.type)) {
-            return 'Only images (JPG, PNG, GIF, WEBP) are allowed'
-          }
-          if (value.size > 5 * 1024 * 1024) {
-            return 'Image size must be less than 5MB'
-          }
-          return true
-        },
-      },
+        image: null,
+        imageUrl: null,
+      })
     }
-  },
-  methods: {
-    cancel() {
-      this.$router.push('/products')
-    },
 
-    submitForm() {
-      const { submitProduct } = useProductStore()
-      submitProduct(this.product)
-    },
+    const cancel = () => {
+      router.back()
+    }
 
-    handleFileChange(event: Event) {
+    const submitForm = async () => {
+      if (!valid.value) return
+
+      loading.value = true
+      try {
+        if (isEditing.value && route.params.id) {
+          await productStore.submitUpdateProduct(product, route.params.id as string)
+        } else {
+          await productStore.submitProduct(product)
+        }
+
+        resetForm()
+
+        router.push({ name: 'home' })
+        productStore.fetchProducts(true)
+      } catch (error) {
+        console.error('Error submitting product:', error)
+      } finally {
+        loading.value = false
+      }
+    }
+
+    const handleFileChange = (event: Event) => {
       const input = event.target as HTMLInputElement
       if (!input.files || input.files.length === 0) {
-        this.previewImage = null
-        this.product.image = null
+        product.image = null
         return
       }
 
       const file = input.files[0]
-      this.product.image = file
+      product.image = file
 
       const reader = new FileReader()
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        if (typeof e.target?.result == 'string') {
-          this.previewImage = e.target?.result
-        }
-      }
-      reader.readAsDataURL(file)
-    },
 
-    removeImage() {
-      this.product.image = null
-      this.previewImage = null
-      const fileInput = this.$refs.fileInput
-      if (fileInput) {
-        fileInput.reset()
+      reader.readAsDataURL(file)
+    }
+
+    const removeImage = () => {
+      product.image = null
+      if (fileInput.value) {
+        fileInput.value = null
       }
-    },
-    resetForm() {
-      const form = this.$refs.form as VForm
-      form?.reset()
-      this.product = {
-        name: '',
-        description: '',
-        weight: null,
-        width: null,
-        length: null,
-        height: null,
-        image: null,
-        price: null,
+    }
+
+    onMounted(() => {
+      const productId = route.params.id as string | undefined
+      if (productId) {
+        fetchProductForEdit(productId)
       }
-      this.previewImage = null
-    },
-  },
-  async mounted() {
-    await this.categoriesStore.fetchCategories()
-  },
-  computed: {
-    categoriesStore() {
-      return useCategoryStore()
-    },
+    })
+
+    return {
+      valid,
+      loading,
+      previewImage,
+      product,
+      rules,
+      categoriesStore,
+      form,
+      fileInput,
+      isEditing,
+      submitForm,
+      handleFileChange,
+      removeImage,
+      cancel,
+      imageRequiredRule,
+    }
   },
 })
 </script>
-
-<style scoped>
-.add-product-page {
-  padding: 32px 0;
-  background-color: #f5f7fa;
-}
-
-.headline {
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-
-.v-card {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.v-card-title {
-  padding: 24px 24px 8px;
-}
-
-.v-card-subtitle {
-  padding: 0 24px 16px;
-  color: #5f6368;
-}
-
-.v-card-text {
-  padding: 16px 24px;
-}
-
-.v-card-actions {
-  padding: 16px 24px;
-}
-
-.text-primary {
-  color: #1976d2;
-}
-
-.image-preview-container {
-  transition: all 0.3s ease;
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-</style>

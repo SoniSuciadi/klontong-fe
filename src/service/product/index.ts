@@ -49,3 +49,14 @@ export const createProduct = async (formData: FormData) => {
     throw error
   }
 }
+export const updateProduct = async (formData: FormData, id: string) => {
+  try {
+    return await axiosInstance.patch(`/product/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  } catch (error) {
+    throw error
+  }
+}

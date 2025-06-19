@@ -40,7 +40,7 @@ export default {
     const router = useRouter()
 
     const handleCardClick = () => {
-      router.push(`/${props.id}`)
+      router.push(`/detail/${props.id}`)
     }
 
     return {
