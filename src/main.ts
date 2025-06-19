@@ -20,7 +20,8 @@ const vuetify = createVuetify({
     defaultSet: 'mdi',
   },
 })
-
+const baseURL = import.meta.env.VITE_API_BASE_URL
+console.log('👻 ~ baseURL:', baseURL)
 const app = createApp(App)
 app.component('SnackbarToast', SnackbarToast)
 app.use(VueCookies, {
