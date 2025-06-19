@@ -38,3 +38,14 @@ export const getProductDetail = async (id: string): Promise<AxiosResponse<Data<P
     throw error as AxiosError
   }
 }
+export const createProduct = async (formData: FormData) => {
+  try {
+    return await axiosInstance.post('/product', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  } catch (error) {
+    throw error
+  }
+}

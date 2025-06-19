@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getProductList, getProductDetail } from '@/service/product'
+import { getProductList, getProductDetail, createProduct } from '@/service/product'
 import type { Product, ProductDetail } from '@/service/types'
 
 export const useProductStore = defineStore('product', () => {
@@ -60,6 +60,32 @@ export const useProductStore = defineStore('product', () => {
       loading.value = false
     }
   }
+  const submitProduct = async (productData) => {
+    loading.value = true
+
+    const formData = new FormData()
+    formData.append('name', productData.name)
+    formData.append('description', productData.description)
+    formData.append('weight', String(productData.weight))
+    formData.append('width', String(productData.width))
+    formData.append('length', String(productData.length))
+    formData.append('height', String(productData.height))
+    formData.append('price', String(productData.price))
+    formData.append('categoryId', productData.category)
+
+    if (productData.image) {
+      formData.append('image', productData.image)
+    }
+
+    try {
+      const response = await createProduct(formData)
+      console.log('Product created:', response.data)
+    } catch (error) {
+      console.error('Error creating product:', error)
+    } finally {
+      loading.value = false
+    }
+  }
 
   return {
     products,
@@ -73,5 +99,6 @@ export const useProductStore = defineStore('product', () => {
     hasMore,
     searchQuery,
     categoryFilter,
+    submitProduct,
   }
 })

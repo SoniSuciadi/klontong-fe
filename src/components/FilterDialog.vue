@@ -51,7 +51,6 @@ export default defineComponent({
   },
   methods: {
     openDialog() {
-      // Set the selected filters based on the current categoryFilter in the store
       this.selectedFilters = this.productStore.categoryFilter.split(',').filter((el) => !!el)
       this.dialog = true
     },
@@ -60,16 +59,12 @@ export default defineComponent({
     },
 
     async applyFilter() {
-      // Set the category filter in the store
       this.productStore.setCategoryFilter(this.selectedFilters.join(','))
-      // Fetch products after updating the filter
       await this.productStore.fetchProducts(true)
-      // Close the filter dialog
       this.closeDialog()
     },
   },
   async mounted() {
-    // Fetch categories when the component is mounted
     await this.categoriesStore.fetchCategories()
   },
 })

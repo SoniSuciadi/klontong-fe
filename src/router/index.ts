@@ -5,6 +5,7 @@ import HomeView from '@/views/HomeView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import DetailView from '@/views/DetailView.vue'
 import NofFoundView from '@/views/NofFoundView.vue'
+import AddProduct from '@/views/AddProduct.vue'
 
 const { cookies } = useCookies()
 
@@ -36,14 +37,20 @@ const router = createRouter({
       meta: { requiresGuest: true },
     },
     {
+      path: '/add',
+      name: 'addProduct',
+      component: AddProduct,
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/404',
       name: '404',
       component: NofFoundView,
     },
-    // {
-    //   path: '/:pathMatch(.*)*',
-    //   redirect: '/404',
-    // },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/404',
+    },
   ],
 })
 
