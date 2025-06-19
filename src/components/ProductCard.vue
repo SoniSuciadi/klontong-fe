@@ -18,11 +18,12 @@
 
         <v-btn icon="mdi-plus" variant="text" color="primary" @click.stop="addToCart"></v-btn>
       </template>
-
-      <v-btn v-else color="primary" @click="addToCart">
-        <v-icon>mdi-cart-plus</v-icon>
-        Tambah ke Keranjang
-      </v-btn>
+      <template v-else>
+        <v-btn color="primary" @click.stop="addToCart">
+          <v-icon>mdi-cart-plus</v-icon>
+          Tambah ke Keranjang
+        </v-btn>
+      </template>
     </v-card-actions>
   </v-card>
 </template>
