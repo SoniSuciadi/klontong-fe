@@ -1,6 +1,5 @@
 <template>
   <v-container fluid>
-    <!-- Header with product name, delete and update buttons -->
     <v-row justify="space-between" align="center" class="mb-4">
       <v-col>
         <v-btn text @click="goBack">
@@ -18,7 +17,6 @@
       </v-col>
     </v-row>
 
-    <!-- Product Details Section -->
     <v-row v-if="productDetail && !loading">
       <v-col cols="12" md="5" class="d-flex justify-center">
         <v-img
@@ -86,14 +84,12 @@
       </v-col>
     </v-row>
 
-    <!-- Loading Spinner -->
     <v-row v-else-if="loading">
       <v-col cols="12" class="text-center">
         <v-progress-circular indeterminate color="primary" size="50" />
       </v-col>
     </v-row>
 
-    <!-- Error Message -->
     <v-row v-else>
       <v-col cols="12" class="text-center">
         <v-alert type="error">Failed to load product details. Please try again later.</v-alert>

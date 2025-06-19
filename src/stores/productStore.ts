@@ -14,7 +14,10 @@ export const useProductStore = defineStore('product', () => {
   const categoryFilter = ref<string>('')
 
   const fetchProducts = async (reset: boolean = false) => {
+    if (loading.value) return
+
     loading.value = true
+
     try {
       const response = await getProductList(
         reset ? '' : cursor.value?.toString(),
@@ -22,6 +25,7 @@ export const useProductStore = defineStore('product', () => {
         searchQuery.value,
         categoryFilter.value,
       )
+
       const newProducts = response.data.data
 
       if (reset || !cursor.value) {
@@ -35,6 +39,16 @@ export const useProductStore = defineStore('product', () => {
     } finally {
       loading.value = false
     }
+  }
+
+  const setSearchQuery = (query: string) => {
+    searchQuery.value = query
+    fetchProducts(true)
+  }
+
+  const setCategoryFilter = (category: string) => {
+    categoryFilter.value = category
+    fetchProducts(true)
   }
 
   const fetchProductDetail = async (id: string) => {
@@ -51,6 +65,8 @@ export const useProductStore = defineStore('product', () => {
     products,
     productDetail,
     loading,
+    setSearchQuery,
+    setCategoryFilter,
     fetchProducts,
     fetchProductDetail,
     cursor,
