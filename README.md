@@ -20,6 +20,14 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
+# Setup environment variables
+
+## Buat file .env berdasarkan .env.example
+
+```bash
+$ cp .env.example .env
+```
+
 ### Compile and Hot-Reload for Development
 
 ```sh
