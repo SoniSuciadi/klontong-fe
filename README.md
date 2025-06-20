@@ -13,6 +13,9 @@ TypeScript cannot handle type information for `.vue` imports by default, so we r
 ## Customize configuration
 
 See [Vite Configuration Reference](https://vite.dev/config/).
+URL DEPLOY: [text](https://brik.zenika.id/login)
+LIVE DEMO :[text](https://drive.google.com/file/d/1AhfD1KWSkhwesu4vxinoPvK3PVFMu9nu/view?usp=sharing)
+
 
 ## Project Setup
 
