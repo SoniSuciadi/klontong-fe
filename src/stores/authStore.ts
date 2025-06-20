@@ -25,6 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response: AxiosResponse<Data<LoginResponse>> = await userLogin(data)
       setUser(response.data.data)
+      window.localStorage.setItem('accessToken', response.data.data.accessToken)
       showSnackbar('success', 'Login successful!')
       return response
     } catch (err) {

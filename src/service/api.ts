@@ -1,5 +1,4 @@
 import axios, { type AxiosInstance } from 'axios'
-import { useCookies } from 'vue3-cookies'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
 
@@ -11,23 +10,15 @@ const axiosInstance: AxiosInstance = axios.create({
   withCredentials: true,
 })
 
-const { cookies } = useCookies()
-
-const getRefreshToken = () => cookies.get('refreshToken')
-
 let refreshing: Promise<string> | undefined = undefined
 
 const refreshAccessToken = async () => {
-  const refreshToken = getRefreshToken()
-  if (!refreshToken) {
-    throw new Error('No refresh token available in cookie')
-  }
-
   try {
     const response = await axios.get(`${baseURL}/auth/refresh`, { withCredentials: true })
     const result = response.data
     return result.data.accessToken
   } catch (error) {
+    window.localStorage.clear()
     console.error(error)
     throw new Error('Failed to refresh token')
   }
@@ -50,6 +41,7 @@ axiosInstance.interceptors.response.use(
 
         const newAccessToken = await refreshing
         refreshing = undefined
+        window.localStorage.setItem('accessToken', newAccessToken)
 
         axiosInstance.defaults.headers['Authorization'] = `Bearer ${newAccessToken}`
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`
