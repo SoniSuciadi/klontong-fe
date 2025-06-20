@@ -1,13 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useCookies } from 'vue3-cookies'
 import LoginView from '@/views/LoginView.vue'
 import HomeView from '@/views/HomeView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import DetailView from '@/views/DetailView.vue'
 import NofFoundView from '@/views/NofFoundView.vue'
 import FormProduct from '@/views/FormProduct.vue'
-
-const { cookies } = useCookies()
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,8 +59,8 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  const refreshToken = cookies.get('refreshToken')
-  const isAuthenticated = !!refreshToken
+  const accessToken = window.localStorage.getItem('accessToken')
+  const isAuthenticated = !!accessToken
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     return '/login'
