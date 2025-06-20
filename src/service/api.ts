@@ -1,3 +1,4 @@
+import router from '@/router'
 import axios, { type AxiosInstance } from 'axios'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
@@ -19,6 +20,7 @@ const refreshAccessToken = async () => {
     return result.data.accessToken
   } catch (error) {
     window.localStorage.clear()
+    router.push({ name: 'login' })
     console.error(error)
     throw new Error('Failed to refresh token')
   }
